@@ -18,6 +18,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      touch-action: manipulation;
     }
 
     .game-container {
@@ -27,6 +28,7 @@
       max-height: 900px;
       background: #ffffff;
       padding: 16px;
+      padding-bottom: 80px; /* ← ここを追加：下に余白を持たせて矢印を上に */
       display: flex;
       flex-direction: column;
       gap: 16px;
@@ -113,7 +115,7 @@
       font-weight: 600;
       cursor: pointer;
       touch-action: manipulation;
-      display: none; /* 終了後だけ表示 */
+      display: none;
     }
 
     #restart-btn:active {
@@ -183,7 +185,7 @@
   </style>
 </head>
 <body>
-  <!-- スタート画面（最初に全面表示） -->
+  <!-- スタート画面 -->
   <div id="start-overlay">
     <h1>10タッチゲーム</h1>
     <div class="rules">
@@ -194,7 +196,7 @@
         <li>左右が異なるときは、大きい数字の方向の矢印をタップ。</li>
         <li>左右が同じときは「▼ 下」をタップ。</li>
         <li>ただし「5 と 5」は合計10なので「▲ 上」が正解です。</li>
-        <li>60秒間で正解すると +1点、不正解で −1点です。</li>
+        <li>60秒間で正解するとコンボに応じて得点アップ、不正解で −1点です。</li>
       </ul>
     </div>
     <button id="start-btn">スタート</button>
