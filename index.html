@@ -5,29 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>10タッチゲーム</title>
   <style>
-    /* 省略せずに前回のCSSそのまま使用可。追加部分のみ下記 */
+    body {
+      background: #f4f4f4;
+      margin: 0;
+      touch-action: manipulation;
+      font-family: sans-serif;
+    }
 
-    #start-btn, #restart-btn {
-      padding: 12px;
-      font-size: 1.2rem;
-      border-radius: 12px;
+    .game-container {
+      max-width: 600px;
+      height: 100vh;
+      margin: 0 auto;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+
+    /* --- スタートオーバーレイ --- */
+    #start-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 30px;
+      z-index: 999;
+    }
+    #start-overlay h1 {
+      font-size: 2.4rem;
+      margin: 0;
+    }
+    #start-overlay button {
+      padding: 18px 40px;
+      font-size: 1.5rem;
+      border-radius: 16px;
       border: none;
       background: #2196f3;
+      font-weight: 700;
       color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      touch-action: manipulation;
     }
-    #restart-btn {
-      background: #4caf50;
-      display: none;
-    }
-    #start-btn:active, #restart-btn:active {
-      opacity: 0.9;
-    }
+
+    /* 既存UIはそのままでOK（前回CSS利用） */
   </style>
 </head>
 <body>
+  <div id="start-overlay">
+    <h1>10タッチゲーム</h1>
+    <button id="start-btn">スタート</button>
+  </div>
+
   <div class="game-container">
     <header class="info-bar">
       <div>残り時間: <span id="time">60</span> 秒</div>
@@ -51,12 +80,20 @@
     </section>
 
     <footer class="footer">
-      <button id="start-btn">スタート</button>
-      <button id="restart-btn">もう一度</button>
+      <button id="restart-btn" style="display:none;">もう一度</button>
       <div id="message"></div>
     </footer>
   </div>
 
   <script src="game.js"></script>
+
+  <script>
+    // ← 追加スクリプト（最小）
+    document.getElementById("start-btn").addEventListener("pointerup", () => {
+      document.getElementById("start-overlay").style.display = "none";
+      restartGame();       // ← game.js 既存の開始関数を呼ぶだけ！
+    });
+  </script>
+
 </body>
 </html>
