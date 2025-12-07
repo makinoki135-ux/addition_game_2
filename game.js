@@ -1,3 +1,5 @@
+// game.js
+
 let leftNumber = 0;
 let rightNumber = 0;
 let score = 0;
@@ -5,17 +7,18 @@ let timeLeft = 60;
 let timerId = null;
 let isGameOver = false;
 
-const leftNumberEl = document.getElementById("left-number");
-const rightNumberEl = document.getElementById("right-number");
-const scoreEl = document.getElementById("score");
-const timeEl = document.getElementById("time");
-const messageEl = document.getElementById("message");
-
-const startBtn = document.getElementById("start-btn");
-const restartBtn = document.getElementById("restart-btn");
-const arrowButtons = document.querySelectorAll(".arrow-btn");
+let leftNumberEl;
+let rightNumberEl;
+let scoreEl;
+let timeEl;
+let messageEl;
+let startOverlay;
+let startBtn;
+let restartBtn;
+let arrowButtons;
 
 function randomDigit() {
+  // 1〜9の乱数
   return Math.floor(Math.random() * 9) + 1;
 }
 
@@ -29,9 +32,22 @@ function setNewNumbers() {
 function getCorrectDirection() {
   const sum = leftNumber + rightNumber;
 
-  if (sum === 10) return "up";
-  if (leftNumber === rightNumber) return "down";
-  return leftNumber > rightNumber ? "left" : "right";
+  // 1. 合計して10 → 上
+  if (sum === 10) {
+    return "up";
+  }
+
+  // 2. 左右が同じ → 下（5と5は上で処理済み）
+  if (leftNumber === rightNumber) {
+    return "down";
+  }
+
+  // 3. 左右が異なる → 大きい方の方向
+  if (leftNumber > rightNumber) {
+    return "left";
+  } else {
+    return "right";
+  }
 }
 
 function updateScore() {
@@ -43,37 +59,46 @@ function updateTime() {
 }
 
 function setButtonsEnabled(enabled) {
-  arrowButtons.forEach((btn) => (btn.disabled = !enabled));
+  arrowButtons.forEach((btn) => {
+    btn.disabled = !enabled;
+  });
 }
 
 function startTimer() {
+  if (timerId) {
+    clearInterval(timerId);
+  }
   timerId = setInterval(() => {
     timeLeft--;
-    updateTime();
-
     if (timeLeft <= 0) {
+      timeLeft = 0;
+      updateTime();
       endGame();
+      return;
     }
+    updateTime();
   }, 1000);
 }
 
 function endGame() {
-  clearInterval(timerId);
+  if (timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  }
   isGameOver = true;
   setButtonsEnabled(false);
-
   messageEl.textContent = `終了！ 最終ポイントは ${score} です。`;
 
+  // 終了したら「もう一度」ボタン表示
   restartBtn.style.display = "block";
-  startBtn.style.display = "none";
 }
 
 function handleArrowInput(direction) {
-  if (isGameOver) return;
+  if (isGameOver || timeLeft <= 0) return;
 
-  const correct = getCorrectDirection();
+  const correctDirection = getCorrectDirection();
 
-  if (direction === correct) {
+  if (direction === correctDirection) {
     score++;
     messageEl.textContent = "正解！";
   } else {
@@ -85,25 +110,18 @@ function handleArrowInput(direction) {
   setNewNumbers();
 }
 
-function attachHandlers() {
-  arrowButtons.forEach((btn) => {
-    btn.addEventListener("pointerup", () => {
-      handleArrowInput(btn.dataset.direction);
-    });
-  });
-
-  startBtn.addEventListener("pointerup", startGame);
-  restartBtn.addEventListener("pointerup", restartGame);
-}
-
 function startGame() {
-  startBtn.style.display = "none";
-  restartBtn.style.display = "none";
+  // スタート画面を消す
+  if (startOverlay) {
+    startOverlay.style.display = "none";
+  }
 
+  // ゲーム状態初期化
   score = 0;
   timeLeft = 60;
   isGameOver = false;
   messageEl.textContent = "";
+  restartBtn.style.display = "none";
 
   updateScore();
   updateTime();
@@ -117,7 +135,32 @@ function restartGame() {
   startGame();
 }
 
+function attachHandlers() {
+  arrowButtons.forEach((btn) => {
+    const direction = btn.dataset.direction;
+    btn.addEventListener("pointerup", () => {
+      handleArrowInput(direction);
+    });
+  });
+
+  startBtn.addEventListener("pointerup", startGame);
+  restartBtn.addEventListener("pointerup", restartGame);
+}
+
 function initGame() {
+  leftNumberEl = document.getElementById("left-number");
+  rightNumberEl = document.getElementById("right-number");
+  scoreEl = document.getElementById("score");
+  timeEl = document.getElementById("time");
+  messageEl = document.getElementById("message");
+  startOverlay = document.getElementById("start-overlay");
+  startBtn = document.getElementById("start-btn");
+  restartBtn = document.getElementById("restart-btn");
+  arrowButtons = document.querySelectorAll(".arrow-btn");
+
+  // 初期状態では矢印は無効のまま（HTML側で disabled にしてある）
+  setButtonsEnabled(false);
+
   attachHandlers();
 }
 
