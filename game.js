@@ -1,5 +1,3 @@
-// game.js
-
 let leftNumber = 0;
 let rightNumber = 0;
 let score = 0;
@@ -12,11 +10,13 @@ const rightNumberEl = document.getElementById("right-number");
 const scoreEl = document.getElementById("score");
 const timeEl = document.getElementById("time");
 const messageEl = document.getElementById("message");
+
+const startBtn = document.getElementById("start-btn");
 const restartBtn = document.getElementById("restart-btn");
 const arrowButtons = document.querySelectorAll(".arrow-btn");
 
 function randomDigit() {
-  return Math.floor(Math.random() * 9) + 1; // 1〜9
+  return Math.floor(Math.random() * 9) + 1;
 }
 
 function setNewNumbers() {
@@ -29,22 +29,9 @@ function setNewNumbers() {
 function getCorrectDirection() {
   const sum = leftNumber + rightNumber;
 
-  // 1. 合計して10 → 上矢印
-  if (sum === 10) {
-    return "up";
-  }
-
-  // 2. 左右が同じ → 下矢印（ただし5と5は上で処理済み）
-  if (leftNumber === rightNumber) {
-    return "down";
-  }
-
-  // 3. 左右が異なる → 大きい数字の方向
-  if (leftNumber > rightNumber) {
-    return "left";
-  } else {
-    return "right";
-  }
+  if (sum === 10) return "up";
+  if (leftNumber === rightNumber) return "down";
+  return leftNumber > rightNumber ? "left" : "right";
 }
 
 function updateScore() {
@@ -56,46 +43,37 @@ function updateTime() {
 }
 
 function setButtonsEnabled(enabled) {
-  arrowButtons.forEach((btn) => {
-    btn.disabled = !enabled;
-  });
+  arrowButtons.forEach((btn) => (btn.disabled = !enabled));
 }
 
 function startTimer() {
-  if (timerId) {
-    clearInterval(timerId);
-  }
-
   timerId = setInterval(() => {
     timeLeft--;
-    if (timeLeft <= 0) {
-      timeLeft = 0;
-      updateTime();
-      endGame();
-      return;
-    }
     updateTime();
+
+    if (timeLeft <= 0) {
+      endGame();
+    }
   }, 1000);
 }
 
 function endGame() {
-  if (timerId) {
-    clearInterval(timerId);
-    timerId = null;
-  }
+  clearInterval(timerId);
   isGameOver = true;
   setButtonsEnabled(false);
-  messageEl.textContent = `終了！最終ポイントは ${score} です。`;
+
+  messageEl.textContent = `終了！ 最終ポイントは ${score} です。`;
+
+  restartBtn.style.display = "block";
+  startBtn.style.display = "none";
 }
 
 function handleArrowInput(direction) {
-  if (isGameOver || timeLeft <= 0) {
-    return;
-  }
+  if (isGameOver) return;
 
-  const correctDirection = getCorrectDirection();
+  const correct = getCorrectDirection();
 
-  if (direction === correctDirection) {
+  if (direction === correct) {
     score++;
     messageEl.textContent = "正解！";
   } else {
@@ -107,33 +85,40 @@ function handleArrowInput(direction) {
   setNewNumbers();
 }
 
-function attachButtonHandlers() {
+function attachHandlers() {
   arrowButtons.forEach((btn) => {
-    const direction = btn.dataset.direction;
-
-    // pointerup でタブレットのタップにも反応
     btn.addEventListener("pointerup", () => {
-      handleArrowInput(direction);
+      handleArrowInput(btn.dataset.direction);
     });
   });
+
+  startBtn.addEventListener("pointerup", startGame);
+  restartBtn.addEventListener("pointerup", restartGame);
 }
 
-function restartGame() {
+function startGame() {
+  startBtn.style.display = "none";
+  restartBtn.style.display = "none";
+
   score = 0;
   timeLeft = 60;
   isGameOver = false;
+  messageEl.textContent = "";
+
   updateScore();
   updateTime();
-  messageEl.textContent = "";
+
   setButtonsEnabled(true);
   setNewNumbers();
   startTimer();
 }
 
+function restartGame() {
+  startGame();
+}
+
 function initGame() {
-  attachButtonHandlers();
-  restartBtn.addEventListener("pointerup", restartGame);
-  restartGame(); // ページ読み込み時に自動スタート
+  attachHandlers();
 }
 
 document.addEventListener("DOMContentLoaded", initGame);
