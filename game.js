@@ -6,6 +6,7 @@ let score = 0;
 let timeLeft = 60;
 let timerId = null;
 let isGameOver = false;
+let streakCount = 0; // 連続正解数
 
 let leftNumberEl;
 let rightNumberEl;
@@ -93,17 +94,29 @@ function endGame() {
   restartBtn.style.display = "block";
 }
 
+function getScoreBonusByStreak(streak) {
+  if (streak <= 0) return 0;
+  // 1〜9 → 1, 10〜19 → 2, 20〜29 → 4, 30〜39 → 8 ...
+  const level = Math.floor((streak - 1) / 10); // 0,1,2,3...
+  return Math.pow(2, level);
+}
+
 function handleArrowInput(direction) {
   if (isGameOver || timeLeft <= 0) return;
 
   const correctDirection = getCorrectDirection();
 
   if (direction === correctDirection) {
-    score++;
-    messageEl.textContent = "正解！";
+    // 正解：連続正解数を増やして、倍率に応じて加点
+    streakCount++;
+    const bonus = getScoreBonusByStreak(streakCount);
+    score += bonus;
+    messageEl.textContent = `正解！ +${bonus}（連続 ${streakCount}）`;
   } else {
-    score--;
-    messageEl.textContent = "まちがい…";
+    // 不正解：スコアは常に -1、連続正解数はリセット
+    score -= 1;
+    streakCount = 0;
+    messageEl.textContent = "まちがい… -1（連続正解リセット）";
   }
 
   updateScore();
@@ -120,6 +133,7 @@ function startGame() {
   score = 0;
   timeLeft = 60;
   isGameOver = false;
+  streakCount = 0;
   messageEl.textContent = "";
   restartBtn.style.display = "none";
 
@@ -158,7 +172,7 @@ function initGame() {
   restartBtn = document.getElementById("restart-btn");
   arrowButtons = document.querySelectorAll(".arrow-btn");
 
-  // 初期状態では矢印は無効のまま（HTML側で disabled にしてある）
+  // 初期状態では矢印は無効のまま
   setButtonsEnabled(false);
 
   attachHandlers();
